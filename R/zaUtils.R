@@ -36,17 +36,6 @@
 # id.entschluesseln (decrypt IDs of Referenzbetriebe)
 # rekid.zaid (key between REK_ID[LINK] & ZA_ID[AGIS])
 #
-# -- Source locally  --
-# if(!exists("mean.weight")) source("//evdad.admin.ch/AGROSCOPE_OS/2/5/2/1/3/1/4269/B0000/func.R")
-# if(!exists("mean.weight")) tryCatch( suppressWarnings(source("//evdad.admin.ch/AGROSCOPE_OS/2/5/2/1/3/1/4269/B0000/func.R")), error=function(e) tryCatch( suppressWarnings(source("~/mnt/agroscope_os/2/5/2/1/3/1/4269/B0000/func.R", encoding="ISO-8859-1")), error=function(e) { message("Sourcing from github."); source("https://raw.githubusercontent.com/danielhoop/R/master/func.R") }))
-# if(!exists("mean.weight")) tryCatch( suppressWarnings(source("//evdad.admin.ch/AGROSCOPE_OS/2/5/2/1/3/1/4269/B0000/func.R")), error=function(e) tryCatch( suppressWarnings(source("//evdad.admin.ch/AGROSCOPE_OS/2/5/2/2/3583/Resultate/00-00-00_Zusatzdaten/R_func/func.R")), error=function(e) { message("Sourcing from github."); source("https://raw.githubusercontent.com/danielhoop/R/master/func.R") }))
-# Very long version for BIT/RStudio, ZA and Voko:
-# if(!exists("mean.weight")) tryCatch({suppressWarnings(source("//evdad.admin.ch/AGROSCOPE_OS/2/5/2/1/3/1/4269/B0000/func.R"))}, error = function(e) tryCatch({suppressWarnings(source("~/mnt/agroscope_os/2/5/2/1/3/1/4269/B0000/func.R", encoding = "ISO-8859-1"))}, error = function (e) tryCatch({suppressWarnings(source("//evdad.admin.ch/AGROSCOPE_OS/2/5/2/2/3583/Resultate/00-00-00_Zusatzdaten/R_func/func.R"))}, error = function (e) tryCatch({suppressWarnings(source("~/mnt/agroscope_os/2/5/2/2/3583/Resultate/00-00-00_Zusatzdaten/R_func/func.R", encoding = "ISO-8859-1"))}, error = function(e) { message("Sourcing from github."); source("https://raw.githubusercontent.com/danielhoop/R/master/func.R")}))))
-# -- GitHub --
-# if(!exists("mean.weight")) source("https://raw.githubusercontent.com/danielhoop/R/master/func.R")
-# browseURL("https://github.com/danielhoop/R/edit/master/func.R")
-# browseURL("https://github.com/danielhoop/R/edit/master/Rhelp.R")
-#
 # -- agsGitlabUtils --
 # Wenn agsGitlabUtils nicht zur Verfuegung steht, dann laut dieser Anleitung installieren: https://gitlab.agsad.admin.ch/f80823148/agsGitlabUtils/blob/master/README.md
 
@@ -55,7 +44,11 @@
 .onLoad <- function (libname, pkgname) {
   # Installing dependencies.
   try(installFromCRAN("fs"))
-  agsGitlabUtils::updatePackage("agsGitlabUtils")
+  if ("agsGitlabUtils" %in% .packages(TRUE)) {
+    agsGitlabUtils::updatePackage("agsGitlabUtils")
+  } else {
+    message("zaUtils: Wenn agsGitlabUtils nicht zur Verfuegung steht, dann laut dieser Anleitung installieren: https://gitlab.agsad.admin.ch/f80823148/agsGitlabUtils/blob/master/README.md")
+  }
 
   # Creating reference to this namespace
   thisNameSpace <- parent.env(environment())
@@ -314,7 +307,9 @@
 #' @seealso \code{\link[agsGitlabUtils:agsPath]{agsGitlabUtils::agsPath}}
 #' @return The converted path.
 agsPath <- function(path) {
-  agsGitlabUtils::agsPath(path)
+  if ("agsGitlabUtils" %in% .packages(TRUE))
+    return(agsGitlabUtils::agsPath(path))
+  return(path)
 }
 
 # from <- c("C:\\asdf", "D:\\23/ccc"); to <- "E:\\a"
@@ -10674,14 +10669,12 @@ print.cor.table <- function(x, quote=FALSE, na.print="", ...){
   print(x$print.table, quote=quote, na.print=na.print, ...)
 }
 
-#' Wrapper for \code{wibe::wibe}.
-#' @description Consider switching package, i.e. working with \code{wibe::wibe} directly.
-#' @inheritParams wibe::wibe
-plm.within.between <- function(data, index=NULL, additionalIndex=NULL, randomEffects=NULL, Y, timeVariantX, timeInvariantX=NULL, timeDummies=NULL, weights=NULL, dfEstimator=c("Satterthwaite", "Kenward-Roger"), vcovFunc = NULL, usePlmPackageOnly=FALSE, useFrmpdPackage=FALSE, ...) {
-  installAgsGitlabUtilsIfNecessary()
-  agsGitlabUtils::updatePackage("wibe")
-  warning("This function is a wrapper to `wibe::wibe`. The package is available on Agroscope GitLab, and you can install it by executing `agsGitlabUtils::updatePackage(\"wibe\").`")
-  wibe::wibe(data=data, index=index, additionalIndex=additionalIndex, randomEffects=randomEffects, Y=Y, timeVariantX=timeVariantX, timeInvariantX=timeInvariantX, timeDummies=timeDummies, weights=weights, dfEstimator=dfEstimator, vcovFunc = vcovFunc, usePlmPackageOnly=usePlmPackageOnly, useFrmpdPackage=useFrmpdPackage, ...)
+#' Deprecated. Moved to wibe::wibe.
+#' @examples
+#' agsGitlabUtils::updatePackage("wibe")
+#' wibe::wibe(...)
+plm.within.between <- function(...) {
+  stop("This function has been moved to the package 'wibe'. The package is available on Agroscope GitLab, and you can install it by executing `agsGitlabUtils::updatePackage(\"wibe\").`")
 }
 
 ####

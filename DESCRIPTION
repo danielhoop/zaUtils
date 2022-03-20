@@ -1,7 +1,7 @@
 Package: zaUtils
 Type: Package
 Title: Utilities for ZA-BH (Zentrale Auswertung von Buchhaltungsdaten), Agroscope
-Version: 0.9.13
+Version: 0.9.14
 Authors@R: person("Daniel", "Hoop", email = "daniel.hoop@agroscope.admin.ch", role = c("aut", "cre"))
 Maintainer: Daniel Hoop <daniel.hoop@agroscope.admin.ch>
 Description: Utilities for ZA-BH (Zentrale Auswertung von Buchhaltungsdaten), Agroscope. Like mean.weight, median.weight, etc.
