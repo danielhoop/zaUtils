@@ -4,7 +4,7 @@
 \alias{installFromCRAN}
 \title{Install a package from CRAN, but only if it is not yet installed}
 \usage{
-installFromCRAN(pkgs, lib = NULL, repos = "https://stat.ethz.ch/CRAN/", ...)
+installFromCRAN(pkgs, lib = NULL, repos = options()$repos, ...)
 }
 \arguments{
 \item{lib}{character vector giving the library directories where to install the packages. Recycled as needed. If missing, defaults to the first element of \code{\link[base:.libPaths]{base::.libPaths}()}.}

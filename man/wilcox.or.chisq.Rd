@@ -4,12 +4,12 @@
 \alias{wilcox.or.chisq}
 \title{Calculate the Wilcoxon rank sum statistics for continuous variables and the chi-squared statistics for binary variables (automatically).}
 \usage{
-wilcox.or.chisq(y, trt, digits = 3, pValuesOnly = TRUE, verbose = TRUE)
+wilcox.or.chisq(data, trt, digits = 3, pValuesOnly = TRUE, verbose = TRUE)
 }
 \arguments{
-\item{y}{A numeric vector or data.frame}
+\item{data}{A numeric vector or data.frame}
 
-\item{trt}{The binary treatment vector}
+\item{trt}{The binary treatment vector (or grouping)}
 
 \item{digits}{The number of digits to round the p.value for the formatted output.}
 

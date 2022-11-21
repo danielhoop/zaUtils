@@ -31,10 +31,10 @@ If any colname of data contains an expression like \code{I(a/b)}, then the the "
 
 \item{index}{Optionally: A numeric vector or \code{data.frame}/\code{list} containing the indices. See also \code{\link[base:tapply]{base::tapply}}.}
 
-\item{cols}{Optionally: The columns in data for which the means should be caldulated. If \code{data} contains the columns \code{"a"} and \code{"b"}, then \code{cols} can also be \code{"I(a/b)"}
+\item{cols}{Optionally: The columns in data for which the means should be calculated. If \code{data} contains the columns \code{"a"} and \code{"b"}, then \code{cols} can also be \code{"I(a/b)"}
 even though the column \code{"I(a/b)"} is not acually contained in \code{data}.}
 
-\item{trunc.probs}{Optionally: The probability of quantiles within which the truncated mean should be calculated.}
+\item{trunc.probs}{Optionally: The probability of quantiles within which the truncated mean should be calculated. Specify the outer probabilities that should be included into the calculation of the mean, such as \code{c(0.025, 0.975)}.}
 
 \item{calc.sum}{Should \code{sum(data*weights)} be calculated, rather than weighted means? TRUE/FALSE}
 

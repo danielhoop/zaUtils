@@ -21,7 +21,7 @@ sd.weight(
 
 \item{index}{Optionally: A numeric vector or \code{data.frame}/\code{list} containing the indices. See also \code{\link[base:tapply]{base::tapply}}.}
 
-\item{cols}{Optionally: The columns in data for which the standard deviation should be caldulated. If \code{data} contains the columns \code{"a"} and \code{"b"}, then \code{cols} can also be \code{"I(a/b)"}}
+\item{cols}{Optionally: The columns in data for which the standard deviation should be calculated. If \code{data} contains the columns \code{"a"} and \code{"b"}, then \code{cols} can also be \code{"I(a/b)"}}
 
 \item{na.rm}{A logical value indicating whether NA values should be stripped before the computation proceeds.}
 

@@ -8,10 +8,9 @@ normalize(
   data,
   qq = TRUE,
   window = FALSE,
-  funcs = list(`x^(-2)` = function(x) x^(-2), `x^(-1)` = function(x) x^(-1), `x^(-0.5)`
-    = function(x) x^(-0.5), `log(x)` = function(x) log(x), `x^(0.5)` = function(x)
-    x^(0.5), x = function(x) x, `x^(2)` = function(x) x^(2), `exp(x)` = function(x)
-    exp(x)),
+  funcs = list(`x^(-2)` = function(x) x^(-2), `x^(-1)` = function(x) x^(-1), `x^(-0.5)` =
+    function(x) x^(-0.5), `log(x)` = function(x) log(x), `x^(0.5)` = function(x) x^(0.5),
+    x = function(x) x, `x^(2)` = function(x) x^(2), `exp(x)` = function(x) exp(x)),
   ...
 )
 }

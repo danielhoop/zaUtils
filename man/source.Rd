@@ -8,8 +8,8 @@ source(file, encoding = getOption("encoding"), ...)
 }
 \arguments{
 \item{file}{a \link[base]{connection} or a character string giving the
-    pathname of the file or URL to read from.  \code{""} indicates the
-    connection \code{\link[base]{stdin}()}.}
+    pathname of the file or URL to read from.  The \code{\link[base]{stdin}()}
+    connection reads from the console when interactive.}
 
 \item{encoding}{character vector.  The encoding(s) to be assumed when
     \code{file} is a character string: see \code{\link[base]{file}}.  A

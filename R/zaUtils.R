@@ -53,7 +53,7 @@
   # Creating reference to this namespace
   thisNameSpace <- parent.env(environment())
 
-  .copyZaData()
+  withTimeout(.copyZaData(), timeout = 60, onTimeout = "silent")
   ## Removing functions that are not used. ##
   rm(.mountZaDrivesOnRStudioServer, .copyZaData, .createLinkFolderAndLinks, # Don't remove these: .agsMachineType, .isZaMember, .getOS,
      .compressSource, .isFunctionDescription,
@@ -202,7 +202,7 @@
 .zaPaths <- function(localData = FALSE,
                      speDataSource = FALSE, spbDataSource = FALSE, refDataSource = FALSE, agisDataSource = FALSE, agLiDataSource = FALSE,
                      speDataCopy = FALSE, spbDataCopy = FALSE, refDataCopy = FALSE, agisDataCopy = FALSE, agLiDataCopy = FALSE,
-                     dataMirrorOsLw = FALSE, dataMirrorFola = FALSE) {
+                     dataMirrorOsLw = FALSE, dataMirrorFola = FALSE, dataNotSensitiveOsLw = FALSE, dataNotSensitiveFola = FALSE) {
 
   paths <- .keyValueStore$getOrSet(
     ".zaPathsData",
@@ -216,9 +216,11 @@
         stop ("Data folder cannot be found because the system is neither Windows nor Linux.")
       }
 
-      dataMirrorOsLw <- agsPath("//oslw-s-pr.wbf.admin.ch/OSLW-PR$/OS/2/5/2/1/3/3/10336/")
-      dataMirrorFola <- agsPath("O:/Data-Work/25_Agricultural_Economics-RE/251_ZA-BH_protected/Mirror/Data/")
+      # ALT
+      # dataMirrorOsLw <- agsPath("//oslw-s-pr.wbf.admin.ch/OSLW-PR$/OS/2/5/2/1/3/3/10336/")
+      # dataMirrorFola <- agsPath("O:/Data-Work/25_Agricultural_Economics-RE/251_ZA-BH_protected/Mirror/Data/")
 
+      if (FALSE) { ALT
       if (.agsMachineType(fola=1)) {
         speDataSource <- agsPath("O:/Data-Work/25_Agricultural_Economics-RE/251_ZA-BH_protected/Mirror/Data/SpE/")
         spbDataSource <- agsPath("O:/Data-Work/25_Agricultural_Economics-RE/251_ZA-BH_protected/Mirror/Data/SpB/")
@@ -245,11 +247,47 @@
         agisDataCopy <- agsPath("//oslw-s-pr.wbf.admin.ch/OSLW-PR$/OS/2/5/2/1/3/3/10336/AGIS/")
         agLiDataCopy <- agsPath("//oslw-s-pr.wbf.admin.ch/OSLW-PR$/OS/2/5/2/1/3/3/10336/AGIS_LINK/")
       }
+      }
+
+
+      dataMirrorOsLw <- agsPath("//oslw-s-pr.wbf.admin.ch/OSLW-PR$/OS/2/5/2/1/5/11158/Sync_11158/")
+      dataMirrorFola <- agsPath("O:/OSLW-SYNC/25_Agricultural_Economics/FG_UW_ZA-BH_p/Sync_11158/")
+      dataNotSensitiveOsLw <- agsPath("//oslw-s-pr.wbf.admin.ch/OSLW-PR$/OS/2/5/2/1/5/11156/DataNotSensitive/")
+      dataNotSensitiveFola <- agsPath("O:/Data-Work/25_Agricultural_Economics-RE/251_ZA-BH_protected/Daten/Spiegel_OS-LW/")
+
+      if (.agsMachineType(fola=1)) {
+        speDataSource <-  paste0(dataNotSensitiveFola, "SpE/")
+        spbDataSource <-  paste0(dataNotSensitiveFola, "SpB/")
+        refDataSource <-  paste0(dataNotSensitiveFola, "Ref/")
+        agisDataSource <- paste0(dataNotSensitiveFola, "AGIS/")
+        agLiDataSource <- paste0(dataNotSensitiveFola, "AGIS_LINK/")
+
+        speDataCopy <- "THERE_IS_NO_COPY_OF_DATA_ON_FOLA/"
+        spbDataCopy <- "THERE_IS_NO_COPY_OF_DATA_ON_FOLA/"
+        refDataCopy <- "THERE_IS_NO_COPY_OF_DATA_ON_FOLA/"
+        agisDataCopy <- "THERE_IS_NO_COPY_OF_DATA_ON_FOLA/"
+        agLiDataCopy <- "THERE_IS_NO_COPY_OF_DATA_ON_FOLA/"
+
+      } else {
+        speDataSource <- agsPath("//oslw-s-pr.wbf.admin.ch/OSLW-PR$/OS/2/5/2/1/5/11156/SpE/")
+        spbDataSource <- agsPath("//oslw-s-pr.wbf.admin.ch/OSLW-PR$/OS/2/5/2/1/5/11156/SpB/")
+        refDataSource <- agsPath("//oslw-s-pr.wbf.admin.ch/OSLW-PR$/OS/2/5/2/1/5/11156/Ref/")
+        agisDataSource <- agsPath("//oslw-s-pr.wbf.admin.ch/OSLW-PR$/OS/2/5/2/1/5/11155/AGIS/")
+        agLiDataSource <- agsPath("//oslw-s-pr.wbf.admin.ch/OSLW-PR$/OS/2/5/2/1/5/11155/AGIS_LINK/")
+
+        speDataCopy <- paste0(dataNotSensitiveOsLw, "SpE/")
+        spbDataCopy <- paste0(dataNotSensitiveOsLw, "SpB/")
+        refDataCopy <- paste0(dataNotSensitiveOsLw, "Ref/")
+        agisDataCopy <- paste0(dataMirrorOsLw, "AGIS/")
+        agLiDataCopy <- paste0(dataMirrorOsLw, "AGIS_LINK/")
+      }
 
       li <- list(
         localData = localData,
         dataMirrorOsLw = dataMirrorOsLw,
         dataMirrorFola = dataMirrorFola,
+        dataNotSensitiveOsLw = dataNotSensitiveOsLw,
+        dataNotSensitiveFola = dataNotSensitiveFola,
 
         speDataSource = speDataSource,
         spbDataSource = spbDataSource,
@@ -275,6 +313,11 @@
     return(paths$dataMirrorOsLw)
   if (dataMirrorFola)
     return(paths$dataMirrorFola)
+
+  if (dataNotSensitiveOsLw)
+    return(paths$dataNotSensitiveOsLw)
+  if (dataNotSensitiveFola)
+    return(paths$dataNotSensitiveFola)
 
   if (speDataSource)
     return(paths$speDataSource)
@@ -667,10 +710,13 @@ if(FALSE && .onHpdaPc())  {
 
 show.pch <- function(show=1:255,mfrow=c(5,5),mar=c(4,1,1,3)){
   # Show what the pch numbers mean (in a graph).
-  mar.orig <- par()$mar; mfrow.orig <- par()$mfrow; #on.exit(par(mar=mar.orig, mfrow=mfrow.orig))
+  mar.orig <- par()$mar
+  mfrow.orig <- par()$mfrow
+  on.exit(
+    par(mar=mar.orig, mfrow=mfrow.orig))
   par(mar=mar, mfrow=mfrow)
-  for(i in show) suppressWarnings( plot(1,pch=i,xlab=i) )
-  par(mar=mar.orig, mfrow=mfrow.orig)
+  for(i in show)
+    suppressWarnings( plot(1,pch=i,xlab=i) )
 }
 
 ####
@@ -1418,8 +1464,9 @@ require.package <- function(..., repos = "http://stat.ethz.ch/CRAN/"){
   }
 }
 
-# Install a package if not yet installed.
-.install.package <- function (x, repos = "http://stat.ethz.ch/CRAN/") {
+#' Install a package if not yet installed.
+#' @keywords internal
+.install.package <- function (x, repos = options()$repos) {
   installFromCRAN(x, repos = repos)
 }
 
@@ -1430,9 +1477,11 @@ require.package <- function(..., repos = "http://stat.ethz.ch/CRAN/"){
 #' @param ... Further arguments passed into \code{\link[utils:install.packages]{utils::install.packages}}.
 #' @param lib character vector giving the library directories where to install the packages. Recycled as needed. If missing, defaults to the first element of \code{\link[base:.libPaths]{base::.libPaths}()}.
 #' @return Logical vector (always FALSE) with length(pkgs), i.e. `return(logical(length(pkgs)))`. For compability with other installation methods of the package.
-installFromCRAN <- function (pkgs, lib=NULL, repos = "https://stat.ethz.ch/CRAN/", ...) {
+installFromCRAN <- function (pkgs, lib=NULL, repos = options()$repos, ...) {
   oldOption <- getOption("install.packages.check.source")
   options(install.packages.check.source = "no")
+  on.exit(
+    options(install.packages.check.source = oldOption))
 
   lengthPkgs <- length(pkgs)
   lib.loc <- NULL
@@ -1451,7 +1500,6 @@ installFromCRAN <- function (pkgs, lib=NULL, repos = "https://stat.ethz.ch/CRAN/
     install.packages(pkgs, lib = lib, repos = repos, type = type, ...)
   }
 
-  options(install.packages.check.source = oldOption)
   return (invisible(logical(lengthPkgs)))
 }
 
@@ -1470,25 +1518,26 @@ vergleichslohn <- function(region=NULL, jahr=NULL){
   # The following line is only needed to import data from the Excel Area E73:A?76
   # t1 <- zaUtils::read.cb("col"); t1 <- zaUtils::char.cols.to.num(sapply(t1,function(x)gsub("'","",x))); colnames(t1) <- zaUtils::substr.rev(colnames(t1),1,4); t1 <- as.matrix(t1); dput(t1)
 
-  vgl <- structure(
-    c(42302L, 38300L, 35067L, 43789L, 39647L, 36300L, 44800L,
-      40563L, 37138L, 46407L, 42017L, 38470L, 48132L, 43579L, 39900L,
-      50988L, 46165L, 42267L, 54498L, 49343L, 45177L, 57116L, 51713L,
-      47347L, 58663L, 53114L, 48630L, 59496L, 53868L, 49320L, 60269L,
-      54568L, 49961L, 61320L, 56328L, 51996L, 61627L, 56610L, 52256L,
-      62056L, 57004L, 52620L, 65854L, 60885L, 55129L, 67011L, 61954L,
-      56097L, 67630L, 62434L, 56934L, 68230L, 62988L, 57439L, 68939L,
-      63085L, 58188L, 69689L, 63772L, 58822L, 71092L, 64520L, 60204L,
-      72561L, 65854L, 61448L, 73279L, 66994L, 62387L, 73853L, 67519L,
-      62876L, 74199L, 66963L, 62588L, 74786L, 67493L, 63083L, 73712L,
-      69108L, 63840L, 74298L, 69657L, 64347L, 74011L, 69035L, 66240L,
-      74527L, 69516L, 66702L, 74748L, 69723L, 66900L, 74718L, 70081L,
-      66194L, 75094L, 70360L, 65710L, 75689L, 70917L, 66231L), .Dim = c(3L, 34L),
-    .Dimnames = list(c("1", "2", "3"), c(
-      "1985", "1986", "1987", "1988", "1989", "1990", "1991", "1992", "1993", "1994", "1995",
-      "1996", "1997", "1998", "2001", "2002", "2003", "2004", "2005",
-      "2006", "2007", "2008", "2009", "2010", "2011", "2012", "2013",
-      "2014", "2015", "2016", "2017", "2018", "2019", "2020")))
+  vgl <- structure(c(42302L, 38300L, 35067L, 43789L, 39647L, 36300L, 44800L,
+              40563L, 37138L, 46407L, 42017L, 38470L, 48132L, 43579L, 39900L,
+              50988L, 46165L, 42267L, 54498L, 49343L, 45177L, 57116L, 51713L,
+              47347L, 58663L, 53114L, 48630L, 59496L, 53868L, 49320L, 60269L,
+              54568L, 49961L, 61320L, 56328L, 51996L, 61627L, 56610L, 52256L,
+              62056L, 57004L, 52620L, 65854L, 60885L, 55129L, 67011L, 61954L,
+              56097L, 67630L, 62434L, 56934L, 68230L, 62988L, 57439L, 68939L,
+              63085L, 58188L, 69689L, 63772L, 58822L, 71092L, 64520L, 60204L,
+              72561L, 65854L, 61448L, 73279L, 66994L, 62387L, 73853L, 67519L,
+              62876L, 74199L, 66963L, 62588L, 74786L, 67493L, 63083L, 73712L,
+              69108L, 63840L, 74298L, 69657L, 64347L, 74011L, 69035L, 66240L,
+              74527L, 69516L, 66702L, 74748L, 69723L, 66900L, 74718L, 70081L,
+              66194L, 75094L, 70360L, 65710L, 75689L, 70917L, 66231L, 75615L,
+              70848L, 66166L), .Dim = c(3L, 35L), .Dimnames = list(
+                c("1", "2", "3"),
+                c("1985", "1986", "1987", "1988", "1989", "1990", "1991",
+                  "1992", "1993", "1994", "1995", "1996", "1997", "1998", "2001",
+                  "2002", "2003", "2004", "2005", "2006", "2007", "2008", "2009",
+                  "2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017",
+                  "2018", "2019", "2020", "2021")))
 
   if(is.null(region)) region <- 1:nrow(vgl)
   if(is.null(jahr)) jahr <- 1:ncol(vgl)
@@ -1505,21 +1554,23 @@ vergleichslohn <- function(region=NULL, jahr=NULL){
 #' vergleichszins()
 #' vergleichszins(2018:2020)
 vergleichszins <- function(jahr=NULL){
+
+  # Source: \\evdad.admin.ch\AGROSCOPE_OS\2\5\2\1\2\1\4341\Vergleichslohn_Zinsen\Zeitreih.xls
   # The following line is only needed to import data.
   # t1 <- read.cb("col"); colnames(t1) <- substr.rev(colnames(t1),1,4); t1 <- as.matrix(t1); dput(t1)
   vgl <- structure(
     c(4.53, 4.71, 4.24, 4.04, 4, 5.13, 6.4, 6.23, 6.42,
       4.58, 4.93, 4.57, 4, 3.4, 2.81, 3.02, 3.95, 3.36, 3.22, 2.63,
       2.73, 2.11, 2.5, 2.91, 2.93, 2.22, 1.65, 1.48, 0.66, 0.94, 0.73,
-      0, 0, 0, 0.05, 0, 0),
-    .Dim = c(1L, 37L),
+      0, 0, 0, 0.05, 0, 0, 0),
+    .Dim = c(1L, 38L),
     .Dimnames = list(
       NULL,
       c("1984", "1985", "1986", "1987", "1988", "1989", "1990", "1991", "1992", "1993",
         "1994", "1995", "1996", "1997", "1998", "1999", "2000", "2001",
         "2002", "2003", "2004", "2005", "2006", "2007", "2008", "2009",
         "2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017",
-        "2018", "2019", "2020")))
+        "2018", "2019", "2020", "2021")))
   if (is.null(jahr))
     jahr <- colnames(vgl)
   if (is.numeric(jahr) && min(jahr)>1900)
@@ -1532,7 +1583,7 @@ vergleichszins <- function(jahr=NULL){
 #' @export
 #' @author Daniel Hoop
 ahv.anteil.betrieb <- function(jahr=NULL){
-  BHJ <- 2019
+  BHJ <- as.numeric(substr(as.character(Sys.time()), 1, 4))
   vgl <- matrix(rep(0.6,BHJ-2014+1),nrow=1);
   colnames(vgl) <- 2014:BHJ
 
@@ -1546,7 +1597,7 @@ ahv.anteil.betrieb <- function(jahr=NULL){
 #' @export
 #' @author Daniel Hoop
 ahv.satz.BG <- function(jahr=NULL){
-  BHJ <- 2016
+  BHJ <- as.numeric(substr(as.character(Sys.time()), 1, 4))
   vgl <- matrix(rep(0.125,BHJ-2014+1),nrow=1);
   colnames(vgl) <- 2014:BHJ
 
@@ -2015,6 +2066,85 @@ dput2 <- function (x) {
   }
 }
 
+#' Extract the year from a POSIX time object.
+#' @export
+#' @author Daniel Hoop
+#' @param time A POSIX time object.
+#' @return The year as numeric.
+#' @examples
+#' year(Sys.time())
+year <- function(time) {
+  as.numeric(format(time, "%Y"))
+}
+
+#' Extract the month from a POSIX time object.
+#' @export
+#' @author Daniel Hoop
+#' @param time A POSIX time object.
+#' @return The month as numeric.
+#' @examples
+#' month(Sys.time())
+month <- function(time) {
+  as.numeric(format(time, "%m"))
+}
+
+#' Extract the day of month from a POSIX time object.
+#' @export
+#' @author Daniel Hoop
+#' @param time A POSIX time object.
+#' @return The dayOfMonth as numeric.
+#' @examples
+#' dayOfMonth(Sys.time())
+dayOfMonth <- function(time) {
+  as.numeric(format(time, "%d"))
+}
+
+#' Extract the day of week from a POSIX time object.
+#' @export
+#' @author Daniel Hoop
+#' @param time A POSIX time object.
+#' @param numeric Logical value indicating if the return value should be numeric (instead of character). Character output will depend on the locale.
+#' @return The dayOfWeek as numeric starting with 1 = Monday, ending with 7 = Sunday. Otherwise a character string depending on the locale.
+#' @examples
+#' dayOfWeek(Sys.time(), numeric = TRUE)
+dayOfWeek <- function(time, numeric = TRUE) {
+  if (numeric)
+    return(as.numeric(format(time, "%u")))
+  return(format(time, "%A"))
+}
+
+#' Extract the hour from a POSIX time object.
+#' @export
+#' @author Daniel Hoop
+#' @param time A POSIX time object.
+#' @return The hour as numeric.
+#' @examples
+#' hour(Sys.time())
+hour <- function(time) {
+  as.numeric(format(time, "%H"))
+}
+
+#' Extract the minute from a POSIX time object.
+#' @export
+#' @author Daniel Hoop
+#' @param time A POSIX time object.
+#' @return The minute as numeric.
+#' @examples
+#' minute(Sys.time())
+minute <- function(time) {
+  as.numeric(format(time, "%M"))
+}
+
+#' Extract the second from a POSIX time object.
+#' @export
+#' @author Daniel Hoop
+#' @param time A POSIX time object.
+#' @return The second as numeric.
+#' @examples
+#' second(Sys.time())
+second <- function(time) {
+  as.numeric(format(time, "%S"))
+}
 
 #### CHANGE OBJECT STRUCUTRE ####
 
@@ -2188,13 +2318,21 @@ dimnames.to.mat <- function(x, dims=c("rowcol","row","col")){
   x <- as.matrix(x)
   rownames(x) <- rn1
 
+  nu <- function(x) {
+    tryCatch(as.numeric(x), warning = function(e) x)
+  }
+
   if(is.null(dimnames(x))) return(x)
   if(is.null(rownames(x))) rownames(x) <- rep("", nrow(x))
   if(is.null(colnames(x))) colnames(x) <- rep("", ncol(x))
-  if(dims=="rowcol") res <- rbind(c("", colnames(x)),
-                                  cbind(rownames(x),x) )
-  if(dims=="row") res <- cbind(rownames(x),x)
-  if(dims=="col") res <- rbind(colnames(x),x)
+  if(dims=="rowcol") {
+    res <- rbind(c(NA, nu(colnames(x))),
+                 cbind(nu(rownames(x)),x))
+    if (is.character(res))
+      res[1] <- ""
+  }
+  if(dims=="row") res <- cbind(nu(rownames(x)),x)
+  if(dims=="col") res <- rbind(nu(colnames(x)),x)
   dimnames(res) <- NULL
   return(res)
 }
@@ -2230,6 +2368,7 @@ c.matrices <- function(..., fill="", nbreak=0, aligned=c("left","right"), integr
   li <- list(...)
   if (length(li)==1 && is.list(li[[1]]) && !is.data.frame(li[[1]]))
     li <- li[[1]]
+
   # Kick NULL elements from the list
   li[sapply(li, is.null)] <- NULL
   # Transform not matrices to matrices & transpose in case of cbind
@@ -2829,9 +2968,9 @@ if(FALSE){
 #' If any colname of data contains an expression like \code{I(a/b)}, then the the "ratio of means" is calculated.
 #' @param weights Optionally: A numeric vector containing the weights for each observation given in \code{x}.
 #' @param index Optionally: A numeric vector or \code{data.frame}/\code{list} containing the indices. See also \code{\link[base:tapply]{base::tapply}}.
-#' @param cols Optionally: The columns in data for which the means should be caldulated. If \code{data} contains the columns \code{"a"} and \code{"b"}, then \code{cols} can also be \code{"I(a/b)"}
+#' @param cols Optionally: The columns in data for which the means should be calculated. If \code{data} contains the columns \code{"a"} and \code{"b"}, then \code{cols} can also be \code{"I(a/b)"}
 #' even though the column \code{"I(a/b)"} is not acually contained in \code{data}.
-#' @param trunc.probs Optionally: The probability of quantiles within which the truncated mean should be calculated.
+#' @param trunc.probs Optionally: The probability of quantiles within which the truncated mean should be calculated. Specify the outer probabilities that should be included into the calculation of the mean, such as \code{c(0.025, 0.975)}.
 #' @param calc.sum Should \code{sum(data*weights)} be calculated, rather than weighted means? TRUE/FALSE
 #' @param digits The number of digits according to which the result will be rounded.
 #' @param na.rm A logical value indicating whether NA values should be stripped before the computation proceeds.
@@ -3162,6 +3301,151 @@ extract.I.vars <- function(vars, keep.original=FALSE, keep.only.necessary=TRUE, 
   return(vars_all)
 }
 
+#' Add column(s) to a data.frame/matrix/list after a certain other column (or list place).
+#' @param afterName After this column name in \code{data}, add the other columns given in \code{addNames}.
+#' @param addNames Optional: The names to be added/rearranged. This only has to be specified when \code{values} has no names.
+#' @param values Optional: The values to be added into \code{data}. This only has to be specified when new data should be added rather than only rearranging columns.
+#' @param data The data.frame, list, or matrix in which the rearrangement should take place.
+#' @return \code{data} with rearranged/added columns.
+#' @examples
+#' dat <- data.frame(a = 1:3, b = 2:4, z = 3:5)
+#' afterName <- "a"
+#' values <- list(c = 5:7)
+#'
+#' # The following examples work without errors.
+#' addColsAfter(afterName = afterName, addNames = NULL, values = values, data = dat)
+#' addColsAfter(afterName = afterName, addNames = NULL, values = as.data.frame(values), data = dat)
+#' addColsAfter(afterName = afterName, addNames = NULL, values = as.matrix(as.data.frame(values)), data = dat)
+#' addColsAfter(afterName = afterName, addNames = "x", values = values, data = dat)
+#' addColsAfter(afterName = "z", addNames = "x", values = values, data = dat)
+#' addColsAfter(afterName = "z", addNames = "z", data = dat)
+#' # The following will only rearrange.
+#' addColsAfter(afterName = afterName, addNames = "z", values = NULL, data = dat)
+#' # The following will rearrange and give new values to column "z".
+#' addColsAfter(afterName = afterName, addNames = "z", values = 1:3, data = dat)
+#'
+#' # The following examples will yield errors.
+#' addColsAfter(afterName = afterName, addNames = NULL, values = 1:3, data = dat)
+#' values <- list(c = 5:7, d = 6:7)
+#' addColsAfter(afterName = afterName, addNames = NULL, values = values, data = dat)
+#'
+#' # In lists, it is allowed that every list place has different length. Hence, no error.
+#' dat <- list(a = 1:3, b = 2:4, z = 1)
+#' addColsAfter(afterName = afterName, addNames = NULL, values = values, data = dat)
+addColsAfter <- function(afterName, addNames = NULL, values = NULL, data) {
+  .addColsBeforeAfter(referenceName = afterName, addNames = addNames, values = values, data = data, before = FALSE)
+}
+
+
+#' Add column(s) to a data.frame/matrix/list before a certain other column (or list place).
+#' @param beforeName Before this column name in \code{data}, add the other columns given in \code{addNames}.
+#' @param addNames Optional: The names to be added/rearranged. This only has to be specified when \code{values} has no names.
+#' @param values Optional: The values to be added into \code{data}. This only has to be specified when new data should be added rather than only rearranging columns.
+#' @param data The data.frame, list, or matrix in which the rearrangement should take place.
+#' @return \code{data} with rearranged/added columns.
+#' @examples
+#' dat <- data.frame(a = 1:3, b = 2:4, z = 3:5)
+#' beforeName <- "a"
+#' values <- list(c = 5:7)
+#'
+#' # The following examples work without errors.
+#' addColsBefore(beforeName = beforeName, addNames = NULL, values = values, data = dat)
+#' addColsBefore(beforeName = beforeName, addNames = NULL, values = as.data.frame(values), data = dat)
+#' addColsBefore(beforeName = beforeName, addNames = NULL, values = as.matrix(as.data.frame(values)), data = dat)
+#' addColsBefore(beforeName = beforeName, addNames = "x", values = values, data = dat)
+#' addColsBefore(beforeName = "z", addNames = "x", values = values, data = dat)
+#' addColsBefore(beforeName = "z", addNames = "z", data = dat)
+#' # The following will only rearrange.
+#' addColsBefore(beforeName = beforeName, addNames = "z", values = NULL, data = dat)
+#' # The following will rearrange and give new values to column "z".
+#' addColsBefore(beforeName = beforeName, addNames = "z", values = 1:3, data = dat)
+#'
+#' # The following examples will yield errors.
+#' addColsBefore(beforeName = beforeName, addNames = NULL, values = 1:3, data = dat)
+#' values <- list(c = 5:7, d = 6:7)
+#' addColsBefore(beforeName = beforeName, addNames = NULL, values = values, data = dat)
+#'
+#' # In lists, it is allowed that every list place has different length. Hence, no error.
+#' dat <- list(a = 1:3, b = 2:4, z = 1)
+#' addColsBefore(beforeName = beforeName, addNames = NULL, values = values, data = dat)
+addColsBefore <- function(beforeName, addNames = NULL, values = NULL, data) {
+  .addColsBeforeAfter(referenceName = beforeName, addNames = addNames, values = values, data = data, before = TRUE)
+}
+
+#' Internal function called by \code{\link{addColsAfter}} or \code{\link{addColsBefore}}
+#' @keywords internal
+.addColsBeforeAfter <- function(referenceName, addNames = NULL, values = NULL, data, before = TRUE) {
+
+  wasMatrix <- FALSE
+  if (is.matrix(data)) {
+    wasMatrix <- TRUE
+    cn1 <- colnames(data)
+    data <- as.data.frame(data, stringsAsFactors = FALSE)
+    colnames(data) <- cn1
+  }
+  if (!is.list(data))
+    stop("`dat` must either be a data.frame, list or matrix.")
+
+  if (!is.null(values)) {
+    if (is.matrix(values)) {
+      cn1 <- colnames(values)
+      values <- as.data.frame(values, stringsAsFactors = FALSE)
+      colnames(values) <- cn1
+    }
+    if (is.vector(values) && !is.list(values)) {
+      if (length(values) != nrow(data))
+        stop("`length(value)` must be equal to `nrow(dat)`.")
+    }
+    if (is.data.frame(data) & is.list(values)) {
+      lapply(values, function(x) {
+        if (length(x) != nrow(data))
+          stop("All entries in `values` must be equal to `nrow(dat)`.")
+      })
+    }
+    if (is.null(addNames)) {
+      if (is.null(names(values)))
+        stop("Either `values` have to have names, or `addName` has to be specified.")
+      addNames <- names(values)
+    }
+    data[addNames] <- values
+  }
+
+  if (is.null(values) &&is.null(addNames))
+    stop("Either specify `values` or `addNames` or both.")
+
+  colsBetween <- match(addNames, names(data))
+  if (any(is.na(colsBetween)))
+    stop("The following columns were not found in `data`: ", paste0(addNames[is.na(colsBetween)], collapse = ", "))
+
+  whichCol <- which(names(data) == referenceName)
+  if (length(whichCol) == 0)
+    stop('Before/after the column "', referenceName, '", some other column(s) "', paste0(addNames, collapse ='", "'), '" sould be introduced. ',
+         'However, the column "', referenceName, '" cannot be found in the dataset (`data`).')
+  whichCol <- whichCol[1]
+  if (before)
+    whichCol <- whichCol - 1
+  if (whichCol == 0) {
+    colsBefore <- numeric()
+  } else {
+    colsBefore <- 1:whichCol
+    colsBefore <- colsBefore[!colsBefore%in%colsBetween]
+  }
+
+  if (whichCol+1 <= length(data)) {
+    colsAfter <- (whichCol+1):length(data)
+  } else {
+    colsAfter <- numeric()
+  }
+  colsAfter <- colsAfter[!colsAfter%in%colsBetween]
+
+  data <- data[c(colsBefore, colsBetween, colsAfter)]
+
+  if (wasMatrix)
+    data <- as.matrix(data)
+
+  return(data)
+}
+
 #' Create columns in \code{data} that are not already existent.
 #' @keywords internal
 #' @author Daniel Hoop
@@ -3287,7 +3571,7 @@ calc.I.cols <- function(data, edit.I.colnames=FALSE, del.I.help.columns=FALSE, I
 #' @author Daniel Hoop
 #' @title Calculate weighted variances
 #' @param data The data of which the weighted variances should be calculated. Can be \code{data.frame}, \code{matrix} or \code{vector}.
-#' @param cols Optionally: The columns in data for which the variance should be caldulated. If \code{data} contains the columns \code{"a"} and \code{"b"}, then \code{cols} can also be \code{"I(a/b)"}
+#' @param cols Optionally: The columns in data for which the variance should be calculated. If \code{data} contains the columns \code{"a"} and \code{"b"}, then \code{cols} can also be \code{"I(a/b)"}
 #' @inheritParams sd.weight
 #' @seealso \code{\link{mean.weight}} for examples
 var.weight <- function(data, weights = NULL, index = NULL, cols = NULL, na.rm = TRUE, change.output.str = FALSE) {
@@ -3298,7 +3582,7 @@ var.weight <- function(data, weights = NULL, index = NULL, cols = NULL, na.rm = 
 #' @author Daniel Hoop
 #' @title Calculate weighted standard deviations
 #' @param data The data of which the weighted standard deviations should be calculated. Can be \code{data.frame}, \code{matrix} or \code{vector}.
-#' @param cols Optionally: The columns in data for which the standard deviation should be caldulated. If \code{data} contains the columns \code{"a"} and \code{"b"}, then \code{cols} can also be \code{"I(a/b)"}
+#' @param cols Optionally: The columns in data for which the standard deviation should be calculated. If \code{data} contains the columns \code{"a"} and \code{"b"}, then \code{cols} can also be \code{"I(a/b)"}
 #' @param var For internal purposes only. If \code{TRUE}, the variance will be calculed. For that purpose, the function \code{\link{var.weight}} can be used.
 #' @inheritParams mean.weight
 #' @seealso \code{\link{mean.weight}} for examples
@@ -3405,30 +3689,37 @@ sd.weight <- function(data, weights = NULL, index = NULL, cols = NULL, na.rm = T
     if (is.null(weights))
       return(sdVarFunc(data, na.rm = na.rm))
 
-    weighted <- data * weights / sum(weights, na.rm = na.rm)
-    return(sdVarFunc(weighted, na.rm = na.rm))
+    if (na.rm) {
+      keep <- !is.na(data)
+      data <- data[keep]
+      weights <- weights[keep]
+    }
+    varRes <- sum(weights * (data - stats::weighted.mean(data, weights))^2)/(sum(weights)-(sum(weights^2))/sum(weights))
 
     # With index
   } else {
     if (is.null(weights))
       return(tapply(data, index, function(x) sdVarFunc(x, na.rm = na.rm)))
 
-    dataweights <- data*weights
-    weights[is.na(dataweights)] <- NA
-
-    dataweights <-  tapply(dataweights, index,  function(x) x)
+    data <-  tapply(data, index,  function(x) x)
     weights <- tapply(weights, index, function(x) x)
 
-    result <- mapply(
-      dataweights = dataweights,
+    varRes <- mapply(
+      data = data,
       weights = weights,
-      FUN = function(dataweights, weights) {
-        weighted <- dataweights / sum(weights, na.rm = na.rm)
-        return(sdVarFunc(weighted, na.rm = na.rm))
+      FUN = function(data, weights) {
+        if (na.rm) {
+          keep <- !is.na(data)
+          data <- data[keep]
+          weights <- weights[keep]
+        }
+        return(sum(weights * (data - stats::weighted.mean(data, weights))^2)/(sum(weights)-(sum(weights^2))/sum(weights)))
       })
-
-    return(result)
   }
+
+  if (isTRUE(var))
+    return(varRes)
+  return(sqrt(varRes))
 }
 
 #' Calculate weighted medians.
@@ -4060,6 +4351,63 @@ by.add.df.cols <- function(data, relevantColnames=NULL, INDICES, FUN, showWarnin
 
 #### OTHER ####
 
+#' Transform p values to sign
+#' @param pVal A numeric vector containing p values (from 0 to 1)
+#' @param indicate0.1 Logical value indicating if 0.1 should also be shown as "."
+#' @return A character vector indicating significant differences where "***" = 0.001, "**" = 0.01, "*" = 0.05 and "." = 0.1
+#' @examples pValToSign(c(0.05, 0.049, 0.01, 0.009))
+pValToSign <- function(pVal, indicate0.1 = FALSE) {
+  if (length(pVal) == 0)
+    return(pVal)
+  sign <- rep("", length(pVal))
+  if (indicate0.1)
+    sign[pVal < 0.1] <- "."
+  sign[pVal < 0.05] <- "*"
+  sign[pVal < 0.01] <- "**"
+  sign[pVal < 0.001] <- "***"
+  return(sign)
+}
+
+#' Evaluate an R expression and interrupts it if it takes too long
+#' @details This function is a slightly adapted version of R.utils::withTimeout (https://cran.r-project.org/package=R.utils)
+#' @param expr The R expression to be evaluated.
+#' @param substitute If TRUE, argument expr is substitute():ed, otherwise not.
+#' @param envir The environment in which the expression should be evaluated.
+#' @param timeout A numeric specifying the maximum number of seconds the expression is allowed to run before being interrupted by the timeout. The cpu and elapsed arguments can be used to specify whether time should be measured in CPU time or in wall time.
+#' @param cpu A numeric specifying the maximum number of seconds the expression is allowed to run before being interrupted by the timeout. The cpu and elapsed arguments can be used to specify whether time should be measured in CPU time or in wall time.
+#' @param elapsed A numeric specifying the maximum number of seconds the expression is allowed to run before being interrupted by the timeout. The cpu and elapsed arguments can be used to specify whether time should be measured in CPU time or in wall time.
+#' @param onTimeout A character specifying what action to take if a timeout event occurs.
+#' @seealso https://cran.r-project.org/package=R.utils
+withTimeout <- function (expr, substitute = TRUE, envir = parent.frame(), timeout, cpu = timeout, elapsed = timeout, onTimeout = c("silent", "error", "warning")) {
+  if (substitute)
+    expr <- substitute(expr)
+  if (!is.environment(envir))
+    stop("Argument 'envir' is not a list: ", class(envir)[1L])
+  cpu <- max(0, min(cpu, Inf))
+  elapsed <- max(0, min(elapsed, Inf))
+  onTimeout <- match.arg(onTimeout)
+  setTimeLimit(cpu = cpu, elapsed = elapsed, transient = TRUE)
+  on.exit({
+    setTimeLimit(cpu = Inf, elapsed = Inf, transient = FALSE)
+  })
+  tryCatch({
+    eval(expr, envir = envir)
+  }, error = function(ex) {
+    msg <- ex$message
+    pattern <- gettext("reached elapsed time limit", "reached CPU time limit", domain = "R")
+    pattern <- paste(pattern, collapse = "|")
+    if (regexpr(pattern, msg) != -1L) {
+      if (onTimeout == "error") {
+        stop("Timeout reached")
+      } else if (onTimeout == "warning") {
+        warning(ex$message)
+      } else if (onTimeout == "silent") {}
+    } else {
+      stop(ex$message)
+    }
+  })
+}
+
 #' Calculate the number of available cores such that memory will not be exhausted by parallel processing.
 #' @param cpuBuffer Numeric value specifying the share totally available processors that should not be used but left as buffer for other processes.
 #' @param memBuffer Numeric value specifying the share of the total memory that should not be used but left as buffer for other processes.
@@ -4419,7 +4767,7 @@ transl.typ <- function(x, short=FALSE, FAT99=FALSE, give.tab=FALSE){
   s3.numb <- c(   11,           12,           21,          22,               23,                   31,                41,                   51,                          52,                          53,                   54)
 
   if(!short){
-    s3.name <- c("Ackerbau","Spezialkulturen","Milchkuehe", "Mutterkuehe", "Rindvieh gemischt", "Pferde/Schafe/Ziegen", "Veredelung", "Kombiniert Milchkuehe/Ackerbau", "Kombiniert Mutterk?he", "Kombiniert Veredelung", "Kombiniert Andere")
+    s3.name <- c("Ackerbau","Spezialkulturen","Milchkuehe", "Mutterkuehe", "Rindvieh gemischt", "Pferde/Schafe/Ziegen", "Veredelung", "Kombiniert Milchkuehe/Ackerbau", "Kombiniert Mutterkuehe", "Kombiniert Veredelung", "Kombiniert Andere")
     if(FAT99) s3.name[c(3,5,8)] <- c("Verkehrsmilch", "Anderes Rindvieh", "Kombiniert Verkehrsmilch/Ackerbau")
   } else {
     s3.name <- c("Ackb","Spez","Milk","MuKu","RiGe","PfSZ","Vere","MiAc","KoMu","KoVe","KoAn")
@@ -5587,26 +5935,21 @@ if(FALSE) mclapply <- switch( Sys.info()[['sysname']],
 #### Geo Data - Swisstopo & Google Maps ####
 # Dealing with Swisstopo coordinates in the AGIS-Data
 
-# From International N,E  to  Swiss y,x
+#' Convert from internation geographic system (WGS84; N, E) to Swiss geographic system (CH1903; y, x)
+#' @param N A vector c(degree, seconds, minutes) North or a decimal number of length 1 (giving only the degrees).
+#' @param E A vector c(degree, seconds, minutes) East or a decimal number of length 1 (giving only the degrees).
+#' @return The coordinates (x, y) in the Swiss geographic system CH1903.
+#' @examples
+#' N <- c(46,  2, 38.87)
+#' E <- c( 8, 43, 49.79)
+#' wgs84.to.ch1903(N, E)
+#' c(x = 1e+05, y = 7e+05)
 wgs84.to.ch1903 <- function(N, E){
-  # This function convert the he international WGS84 coordinates (N, E) to
-  # CH1903 coordinates (that are e.g. used in the AGIS-data)
-
-  # N = Vektor mit c(Grad, Minuten, Sekunden)   Nord      oder Grad mit Dezimalstellen
-  # E = Vektor mit c(Grad, Minuten, Sekunden)   Ost       oder Grad mit Dezimalstellen
-  #
-
-  # Swisstopo Beispiel
-  # N <- c(46,  2, 38.87)
-  # E <- c( 8, 43, 49.79)
-  # Resultat
-  # y = 700000 , x = 100000
-
   if(length(N)==1){   x0 <- N
   } else {            x0 <- N[1]*3600 + N[2]*60  + N[3]   }
   x1 <- (x0 - 169028.66) / 10000
 
-  if(length(N)==1){   y0 <- E
+  if(length(E)==1){   y0 <- E
   } else {            y0 <- E[1]*3600 + E[2]*60  + E[3]   }
   y1 <- (y0 - 26782.5) / 10000
 
@@ -5616,25 +5959,21 @@ wgs84.to.ch1903 <- function(N, E){
   x <- round(x)
   y <- round(y)
 
-  res <- c(y=y, x=x)
+  res <- c(x=x, y=y)
   return(res)
 }
 
-# From Swiss y,x  to  International N,E
-ch1903.to.wgs84 <- function(y, x,  output=c("decimal", "minsec")) {
-  # This function converts the CH1903 coordinates (that are e.g. used in the AGIS-data)
-  # to the international WGS84 coordinates (N, E).
-  # y = y coordinates
-  # x = x coordinates
-  # Note that the coordinates METER_X and METER_Y in the AGIS data are probably interchanged.
-
-  # Swisstopo Beispiel
-  # x <- 100000
-  # y <- 700000
-  # Resultat
-  # N = 46? 02' 38.86"
-  # E =  8? 43' 49.80"
-  # Ist korrekt.
+#' Convert from Swiss geographic system (CH1903; y, x) to internation geographic system (WGS84; N, E)
+#' @param x The x coordinates
+#' @param y The y coordinates
+#' @param output A character value describing the output format. Eiter \code{"decimal"} (decimal value of length 1) or \code{"minsec"} (vector of length 3).
+#' @return The coordinates (N, E) in the internation geographic system (WGS84).
+#' @examples
+#' ch1903.to.wgs84(x = 100000, y = 700000, output = "minsec")
+#' # N = 46° 02' 38.86"
+#' # E =  8° 43' 49.80"
+#' @details Note that the coordinates METER_X and METER_Y in the AGIS data are probably interchanged.
+ch1903.to.wgs84 <- function(x, y, output=c("decimal", "minsec")) {
 
   output <- match.arg(output)
 
@@ -5666,8 +6005,8 @@ ch1903.to.wgs84 <- function(y, x,  output=c("decimal", "minsec")) {
   res$N <- c(deg=Ng, min=Nm, sec=Ns)
   res$E <- c(deg=Eg, min=Em, sec=Es)
   res$full <- paste0(
-    Ng, "?", Nm, "'", Ns, "'' N,   ",
-    Eg, "?", Em, "'", Es, "'' E"
+    Ng, "°", Nm, "'", Ns, "'' N,   ",
+    Eg, "°", Em, "'", Es, "'' E"
   )
   return(res)
 }
@@ -7058,7 +7397,7 @@ max.n.digits <- function(x, startDigits=5, tol=10^(-startDigits)) {
 #' @keywords internal
 #' @author Daniel Hoop
 #' @param add The sign that will be added.
-#' @param where Character indigating if `add` should be added at the beginning or at the end of the string.
+#' @param where Character indicating if `add` should be added at the beginning or at the end of the string.
 #' @examples
 #' x <- data.frame(a=seq(0.1, 1, 0.1) , b=c(1:10))
 #' equal.length(equal.n.decimals(x))
@@ -8507,6 +8846,53 @@ count.lines <- function(file) {
 #' view(x)
 view <- function(x, names=c("col","rowcol","row","no"), nrows=-1, ncols=-1, fastViewOfSubset=TRUE, folder=NULL, filename=NULL, quote=FALSE, na="NA", sep="EXCEL", decimal.mark=".", openFolder=FALSE, title = NULL, ...){
 
+  names <- match.arg(names)
+
+  if ("table" %in% class(x)) {
+    if (length(dim(x)) == 2) {
+      class(x) <- "matrix"
+    } else {
+      message('Object of class "table" was converted to a matrix.')
+      x <- as.matrix(x)
+    }
+  }
+
+  # If it is only a vector, create matrix and save as text file.
+  txtFile <- FALSE
+  if (is.null(dim(x))) {
+    if (length(x)==1)
+      txtFile <- TRUE
+    x <- as.matrix(x)
+    # If it is an array with 3 dimensions, create a matrix with 2 dimensions.
+  } else if (length(dim(x)) > 2) {
+    if (length(dim(x)) == 3) {
+      x <- dimnames.to.mat(dim3.to.mat(x, keep.colnames = TRUE), dims = names)
+      names <- "no"
+    } else {
+      stop("Arrays with more than 3 dimensions cannot be processed.")
+    }
+  }
+  # If it is a list, create a matrix.
+  if (is.list(x) && !is.data.frame(x)) {
+    message("Trying to process a list as input (`x`).")
+    x <- c.matrices(x, integrate.dimnames = "rowcol", nbreak = 1, fill = NA)
+    names <- "no"
+  }
+  if (is.null(colnames(x)))
+    colnames(x) <- paste0("V",1:ncol(x))
+
+  # Replace NaN by NA, because otherwise the argument na=... in write.table() will not work.
+  if (!na%in%c("NA","NaN")){
+    naReplace <- function(x){ x[is.nan(x)] <- NA ;x }
+    if (is.matrix(x)) {
+      x <- apply(x,2,naReplace)
+    } else {
+      dn1 <- dimnames(x)
+      x <- as.data.frame(lapply(x, naReplace), stringsAsFactors=FALSE)
+      dimnames(x) <- dn1
+    }
+  }
+
   # If on RStudio server open the view with the actual name of the data frame.
   if (.agsMachineType(rstudioserver=1) && is.null(folder) && is.null(filename)) {
     objName <- paste0(as.character(substitute(x)), collapse = "")
@@ -8518,26 +8904,8 @@ view <- function(x, names=c("col","rowcol","row","no"), nrows=-1, ncols=-1, fast
   if (sep == "EXCEL")
     installFromCRAN("openxlsx")
 
-  txtFile <- FALSE
-  if(is.null(dim(x))) {
-    if(length(x)==1) txtFile <- TRUE
-    x <- as.matrix(x)
-  }
-  if(is.null(colnames(x))) colnames(x) <- paste0("V",1:ncol(x))
-
-  # Replace NaN by NA, because otherwise the argument na=... in write.table() will not work.
-  if(!na%in%c("NA","NaN")){
-    naReplace <- function(x){ x[is.nan(x)] <- NA ;x }
-    if(is.matrix(x)) {
-      x <- apply(x,2,naReplace)
-    } else {
-      dn1 <- dimnames(x)
-      x <- as.data.frame(lapply(x, naReplace), stringsAsFactors=FALSE)
-      dimnames(x) <- dn1
-    }
-  }
-
-  if(txtFile) names <- "no"
+  if(txtFile)
+    names <- "no"
   names <- match.arg(names)
 
   # Check if data.frame should be shrinked for faster view
@@ -8657,7 +9025,7 @@ view <- function(x, names=c("col","rowcol","row","no"), nrows=-1, ncols=-1, fast
     }
   } else {
     if (sep == "EXCEL") {
-      openxlsx::write.xlsx(x, file, colNames = FALSE, rowNames = FALSE)
+      openxlsx::write.xlsx(x, pfad1, colNames = FALSE, rowNames = FALSE)
     } else {
       write.table(x, file=pfad1, sep=sep, col.names=FALSE, row.names=FALSE, quote=quote, na=na, ...)
     }
@@ -8800,12 +9168,15 @@ renameGbVariablesInScript <- function (filename) {
 #' @export
 #' @param file The file containing the conversion rules
 #' @param allowFileFormats The file formats that are allowed.\cr\code{"xlsx"}   Excel\cr\code{", sep"}   comma separated\cr\code{"; sep"}   semicolon separated.
-#' @param conversionDate Optional, but important: The date when the conversion was exported or when it is applied. If specified, only these rules are kept that are valid at the time of conversion (using the colums 'von' and 'bis' in the conversion table).\cr
-#' Use something like \code{as.Date(Sys.time())} or \code{as.Date("01.01.2022", format = "\%d.\%m.\%Y")} to create an object of class "Date".
+#' @param dropInactive Logical value indicating if non-active "Merkmale" should be kicked from the table (this is strongly recommended, therefore, default is \code{TRUE}).
+#' @param conversionDate The date when the conversion was exported or when it is applied. If specified, only these rules are kept that are valid at the time of conversion (using the colums 'von' and 'bis' in the conversion table).\cr
+#' Use something like \code{as.Date(Sys.time())} or \code{as.Date("01.01.2022", format = "\%d.\%m.\%Y")} to create an object of class "Date". Default is \code{as.Date(paste0(substr(Sys.time(), 1, 4), "-01-01"))}.
 #' @param expandRanges Logical value indicating if account ranges should be expaned (e.g. 311-313 -> 311,312,313)
-#' @param accountSystemFile If `expandRanges == TRUE`, then the file containing the ZA account system has to be provided (usually something like 'za-accountsystem.xml').
+#' @param accountSystemFile If \code{expandRanges == TRUE}, then the file containing the ZA account system has to be provided (usually something like 'za-accountsystem.xml').
 #' @param verbose Logical value indicating if warnings should be displayed when some conversion rule ranges do not contain any existing accounts.
-readConversionSpb <- function(file, allowFileFormats = c("xlsx", ", sep", "; sep"), conversionDate = NULL,
+#' @details Both, \code{dropInactive} and \code{conversionDate} have to be specified!
+readConversionSpb <- function(file, allowFileFormats = c("xlsx", ", sep", "; sep"),
+                              dropInactive = TRUE, conversionDate = as.Date(paste0(substr(Sys.time(), 1, 4), "-01-01")),
                               expandRanges = FALSE, accountSystemFile = NULL, verbose = FALSE) {
 
   if (expandRanges && (is.null(accountSystemFile) || !file.exists(accountSystemFile)))
@@ -8814,36 +9185,45 @@ readConversionSpb <- function(file, allowFileFormats = c("xlsx", ", sep", "; sep
   if ("xlsx" %in% allowFileFormats)
     installFromCRAN("openxlsx")
 
-  convertToDate <- function(x) {
+  findDateConversionFunc <- function(x) {
     x1 <- x[!is.na(x)][1]
     # When all are NA, the date format is irrelevant.
+
     if (is.na(x1))
-      return(as.Date(x, format = "%d.%m.%Y"))
+      return(function(x) as.Date(x, format = "%Y-%m-%d"))
 
     # Try different date formats.
     time1 <- NA
     if (is.character(x)) {
-      if (is.na(time1)) {
-        timeFormatIs <- 1
-        time1 <- as.Date(x[1], format = "%d.%m.%Y")
+      if (all(is.na(time1))) {
+        timeFormat <- "%d.%m.%Y %H:%M:%S"
+        time1 <- as.Date(x1, format = timeFormat)
       }
-      if (is.na(time1)) {
-        timeFormatIs <- 2
-        time1 <- as.Date(x[1], format = "%m/%d/%Y")
+      if (all(is.na(time1))) {
+        timeFormat <- "%d.%m.%Y"
+        time1 <- as.Date(x1, format = )
+      }
+      if (all(is.na(time1))) {
+        timeFormat <- "%m/%d/%Y %H:%M:%S"
+        time1 <- as.Date(x1, format = timeFormat)
+      }
+      if (all(is.na(time1))) {
+        timeFormat <- "%m/%d/%Y"
+        time1 <- as.Date(x1, format = timeFormat)
       }
     } else if (is.numeric(x)) {
-      if (is.na(time1)) {
-        timeFormatIs <- 3
-        time1 <- as.Date(x[1], origin = "1899-12-31")
+      if (all(is.na(time1))) {
+        timeFormat <- "1899-12-31"
+        time1 <- as.Date(x1, origin = timeFormat)
       }
     }
-    if(is.na(time1))
+    if(any(!is.na(x1) & is.na(time1))) {
       stop("Das Datumsformat in Spalten 'von', 'bis', 'geandert' konnte nicht erkannt werden.")
+    }
 
-    date <- if (timeFormatIs == 1) as.Date(x, format = "%d.%m.%Y") else
-      if (timeFormatIs == 2) as.Date(x, format = "%m/%d/%Y") else
-        if (timeFormatIs == 3) as.Date(x, origin = "1899-12-31")
-    return(date)
+    if (timeFormat == "1899-12-31")
+      return(function(y) as.Date(y, origin = timeFormat))
+       else return(function(y) as.Date(y, format = timeFormat))
   }
 
   # Read conversion
@@ -8862,7 +9242,7 @@ readConversionSpb <- function(file, allowFileFormats = c("xlsx", ", sep", "; sep
   }
   if ("xlsx" %in% allowFileFormats && (is.null(konv) || ncol(konv) < 3)) {
     tryCatch({
-      konv <- openxlsx::read.xlsx(file)
+      konv <- openxlsx::read.xlsx(file, sheet = 1)
       colnames(konv) <- gsub("^", ".", colnames(konv), fixed = TRUE)
       colnames(konv) <- gsub("+", ".", colnames(konv), fixed = TRUE)
     }, error = function(x) NULL)
@@ -8870,19 +9250,30 @@ readConversionSpb <- function(file, allowFileFormats = c("xlsx", ", sep", "; sep
   if (is.null(konv) || ncol(konv) < 3)
     stop("`file` must contain the path to a file formatted as ", paste0(allowFileFormats, collapse = "   OR   "))
 
-  # IST+1 in boolean umwandeln.
-  if (!is.logical(konv[, "Ist..1"])) {
-    suIst <- sort(unique(konv[, "Ist..1"]))
-    if (length(suIst) == 2 && all(suIst == c(-1, 0))) {
-      konv[, "Ist..1"] <- konv[, "Ist..1"] == -1
-    } else if (length(suIst) == 2 && all(suIst == c("FALSCH", "WAHR"))) {
-      konv[, "Ist..1"] <- konv[, "Ist..1"] == "WAHR"
-    } else {
-      stop("`Ist..1` has to be either logical or contain only '0' and '-1' values.")
+  # "Ist+1" und "Aktiv" in boolean umwandeln.
+  convertLogical <- function(x, columnName) {
+    if (!is.logical(x)) {
+      suX <- sort(unique(x))
+      if (length(suX) == 2 && all(suX == c(-1, 0))) {
+        x <- x == -1
+      } else if (length(suX) == 2 && all(suX == c("FALSCH", "WAHR"))) {
+        x <- x == "WAHR"
+      } else {
+        stop("The column '", columnName, "' has to be either logical or contain only '0' and '-1' values.")
+      }
     }
+    return(x)
+  }
+  konv[, "Ist..1"] <- convertLogical(konv[, "Ist..1"], columnName = "Ist..1")
+  if (dropInactive) {
+    if (!"Aktiv" %in% colnames(konv))
+      stop("If `dropInactive` is TRUE, then the table containing the conversion rules must have a column named 'Aktiv'.")
+    konv[, "Aktiv"] <- convertLogical(konv[, "Aktiv"], columnName = "Aktiv")
+    konv <- konv[konv[, "Aktiv"], , drop = FALSE]
   }
 
   # Zeiten in Date-Format umwandeln und nur die Buchungen behalten, die fuer die aktuelle Zeit relevant sind.
+  convertToDate <- findDateConversionFunc(konv[, "bis"])
   timeCols <- grepl("^von$|^bis$|^ge.ndert$", colnames(konv))
   konv[timeCols] <- lapply(konv[timeCols], convertToDate)
   rm(timeCols)
@@ -8896,18 +9287,24 @@ readConversionSpb <- function(file, allowFileFormats = c("xlsx", ", sep", "; sep
   konv <- konv[filter, , drop = FALSE]
 
   # NA auf ""
-  charCols <- !grepl("Ist..1|^von$|^bis$|^ge.ndert$", colnames(konv))
+  # Nur fuer Spalten, die nicht genannt werden:
+  charCols <- sapply(konv, class) == "character" # !grepl("^von$|^bis$|^ge.ndert$", colnames(konv))
   konv[charCols] <- lapply(konv[charCols], function(x){
     x[is.na(x)] <- ""
     return(x)
   })
 
   # Neue Spalten zu Merkmal erzeugen.
-  konv[, "Merkmal"] <- sapply(strsplit(konv[,"Gruppe.."], " "), function(x) {
-    if (length(x) == 0 || is.na(x)) "" else x[[1]]
-  })
+  if (!"Merkmal" %in% colnames(konv)) {
+    konv[, "Merkmal"] <- sapply(strsplit(konv[,"Gruppe.."], " "), function(x) {
+      if (length(x) == 0 || (length(x) == 1 && is.na(x))) "" else x[[1]]
+    })
+  } else {
+    konv[, "Merkmal"] <- trimws(konv[, "Merkmal"])
+    konv <- konv[grepl("^P[0-9]", konv[, "Merkmal"]), , drop = FALSE]
+  }
   if (any(konv[, "Merkmal"] == ""))
-    stop("In der Spalte 'Gruppe..' der Konversionsdatei muss an erster Stelle die Merkmals-UID stehen.")
+    stop("In der Spalte 'Gruppe..' der Konversionsdatei muss an erster Stelle die Merkmals-UID stehen. Ebenfalls darf es kein Merkmal mit Wert '' geben.")
 
   konv[, "Konto"] <- paste0(konv[, "Konto.Haben"], konv[, "Konto.Soll"])
   konv[, "Merkmal_Konto"] <- paste0(konv[, "Merkmal"], konv[, "Konto"])
@@ -9161,13 +9558,13 @@ load.spe.status <- function(BHJ = NULL, termin = NULL, file = NULL) {
     stop("Either specify `BHJ` or `file` but not both.")
 
   if (is.null(file)) {
-    pathStatus <- agsPath(paste0("//art-settan-1000.evdad.admin.ch/ZAMAIN/ZADaten/SpE/Liste_Plausible/B",BHJ,"/"))
+    pathStatus <- agsPath(paste0("//oslw-s-pr.wbf.admin.ch/OSLW-PR$/OS/2/5/2/1/5/11157/SpE/Liste_Plausible/B",BHJ,"/"))
 
     if (is.null(termin)) {
       fold <- list.files(pathStatus)
       fold <- fold[grepl("Termin",fold)]
       fold <- sort(fold[file.info(paste0(pathStatus, fold))$isdir], decreasing=TRUE)[1]
-      fileWithoutEnding <- agsPath(paste0("//art-settan-1000.evdad.admin.ch/ZAMAIN/ZADaten/SpE/Liste_Plausible/B",BHJ,"/",fold,"/Plausible_B",BHJ))
+      fileWithoutEnding <- agsPath(paste0("//oslw-s-pr.wbf.admin.ch/OSLW-PR$/OS/2/5/2/1/5/11157/SpE/Liste_Plausible/B",BHJ,"/",fold,"/Plausible_B",BHJ))
     } else {
       fold <- paste0(pathStatus, termin, "_Termin")
       fileWithoutEnding <- paste0(fold,"/Plausible_B",BHJ)
@@ -9226,7 +9623,7 @@ load.spe <- function(withGbVars = FALSE, assureSameObsInDbAndStatusList = FALSE,
     id_not_in_DB <- sort(id_ok[ !id_ok%in%dat[dat[,"JAHR"]==BHJ,"REK_ID"] ])
     # Pruefen, ob alle plausiblen Betriebe im Datensatz sind.
     if(length(id_not_in_DB)>0) {
-      notVerknFile <- agsPath(paste0("//art-settan-1000.evdad.admin.ch/ZAMAIN/ZADaten/SpE/ErhbogTxtExport/nichtVerkn/B",BHJ,"/ID_nVerkn_B",BHJ,".csv"))
+      notVerknFile <- agsPath(paste0("//oslw-s-pr.wbf.admin.ch/OSLW-PR$/OS/2/5/2/1/5/11157/SpE/ErhbogTxtExport/nichtVerkn/B",BHJ,"/ID_nVerkn_B",BHJ,".csv"))
       if (!file.exists(notVerknFile)) {
         warnStopFunc(paste0("Es scheinen Betriebe in der Datbenbank zu fehlen, aber laut dem Verknuepfungsprozess ist dieser Fehler nicht aufgetreten. Das folgende File fehlt:\n",
                              notVerknFile, "\n",
@@ -9242,7 +9639,7 @@ load.spe <- function(withGbVars = FALSE, assureSameObsInDbAndStatusList = FALSE,
                              paste0(id_not_verkn,collapse=", ")))
       }
       if(FALSE){
-        files <- list.files(agsPath(paste0("//art-settan-1000.evdad.admin.ch/ZAMAIN/ZADaten/SpE/ErhbogTxtExport/Rohdat/B",BHJ)), recursive=TRUE)
+        files <- list.files(agsPath(paste0("//oslw-s-pr.wbf.admin.ch/OSLW-PR$/OS/2/5/2/1/5/11157/SpE/ErhbogTxtExport/Rohdat/B",BHJ)), recursive=TRUE)
         files <- unique(files[substr.rev(files,1,4)==".txt"])
         files <- lapply(strsplit(files,"/"),function(x)x[length(x)])
         files <- substr(files,13,19)
@@ -9491,17 +9888,26 @@ load.agis <- function(year, additional = FALSE, status = FALSE, keepAllInStatus 
 }
 
 .availableAgisYears <- function() {
-  # First AGIS
+
+  timeoutSeconds <- 4
+  yearExists <- FALSE
+  startTime <- Sys.time()
+
+  # First year of AGIS
   agisStartYear <- 2013
   years <- as.numeric(format(Sys.time(), "%Y"))
   years <- sort(unique(agisStartYear:years))
-  yearExists <- FALSE
   for (i in length(years):1) {
     checkFile <- paste0(.zaPaths(agisDataSource=1), years[i], "/AGIS_BFS_", years[i], ".RData")
     yearExists <- yearExists || file.exists(checkFile)
     if (yearExists)
       break
+    if (difftime(Sys.time(), startTime, units = "sec") > timeoutSeconds) {
+      message("Available AGIS years could not be determined due to a timeout.")
+      break
+    }
   }
+
   if (yearExists)
     return(unique(years[1:i]))
   return(numeric())
@@ -9593,7 +9999,7 @@ rekid.zaid <- function(id, reverse=FALSE, BHJ=NULL, no.match.NA=TRUE){
   idMapping <- .keyValueStore$getOrSet(
     "rekid.zaid$idMapping",
     local({
-      baseFolder <- agsPath("//art-settan-1000.evdad.admin.ch/ZAMAIN/ZADaten/SpE/ID_Verkn_AGIS_Rekr/")
+      baseFolder <- agsPath("//oslw-s-pr.wbf.admin.ch/OSLW-PR$/OS/2/5/2/1/5/11157/SpE/ID_Verkn_AGIS_Rekr/")
       files <- list.files(baseFolder)
       if (length(files) == 0)
         stop ("Der Ordner '", baseFolder, "' scheint nicht zu existieren, oder es befinden sich darin keine Unterordner.")
@@ -11276,8 +11682,8 @@ harmonize.agis.colnames <- function(col.names){
 #' Calculate the Wilcoxon rank sum statistics for continuous variables and the chi-squared statistics for binary variables (automatically).
 #' @export
 #' @author Daniel Hoop
-#' @param y A numeric vector or data.frame
-#' @param trt The binary treatment vector
+#' @param data A numeric vector or data.frame
+#' @param trt The binary treatment vector (or grouping)
 #' @param digits The number of digits to round the p.value for the formatted output.
 #' @param pValuesOnly Default: TRUE. Logical value indicating if only the p value or also signs like \code{".", "*", "**", "***"} should be returned as result.
 #' @param verbose Default: TRUE. Logical value indicating if the detection of binary variables (and the application of the chisq test) should be commented during calculations.
@@ -11287,30 +11693,30 @@ harmonize.agis.colnames <- function(col.names){
 #' wilcox.or.chisq(
 #'   data.frame(nonSignVar = rnorm(1:100), signVar = c(rep(1,50),rep(2,50))),
 #'   trt = c(rep(1,50), rep(2,50)))
-wilcox.or.chisq <- function(y, trt, digits=3, pValuesOnly=TRUE, verbose=TRUE) {
+wilcox.or.chisq <- function(data, trt, digits=3, pValuesOnly=TRUE, verbose=TRUE) {
 
 
   if (length(unique(trt))!=2)
     stop("trt must contain exactly two different values.")
 
-  if (!is.data.frame(y)) {
-    if (!is.numeric(y))
+  if (!is.data.frame(data)) {
+    if (!is.numeric(data))
       stop("y must be a numeric vector or a data.frame.")
-    y <- as.data.frame(y,stringsAsFactors=FALSE)
+    data <- as.data.frame(data,stringsAsFactors=FALSE)
   }
 
   # Debugging: y <- y[,"I(Verkauf_kg_Ti/Groesse*0.004)"]
-  kruskres <- sapply(y,function(y){
+  kruskres <- sapply(data,function(y){
     notNA <- !is.na(y)
-    if(length(unique(y[notNA]))>1 && length(unique(trt[notNA]))>1 ) kruskal.test(y, g=as.factor(trt))$p.value else NaN
+    if(length(unique(y[notNA]))>1 && length(unique(trt[notNA]))>1 ) stats::kruskal.test(y, g=as.factor(trt))$p.value else NaN
   })
 
   # Chisquared Test fuer Kategorielle Variablen.
   #y <- as.data.frame(matrix(c(0,1,1,1,2,3),ncol=2)); colnames(y) <- c("a","b")
-  chisqVars <- sapply(y, function(x)length(unique(x))==2)
+  chisqVars <- sapply(data, function(x)length(unique(x))==2)
   chisqVars <- names(chisqVars)[chisqVars]
   if(length(chisqVars)>0){
-    chisqRes <- sapply(y[,chisqVars,drop=FALSE],function(x){
+    chisqRes <- sapply(data[,chisqVars,drop=FALSE],function(x){
       notNA <- !is.na(x)
       if(length(unique(x[notNA]))>1 && length(unique(trt[notNA]))>1 ) chisq.test.2groups(y=x, trt=trt)$p.value else NaN
     })
@@ -11336,72 +11742,109 @@ wilcox.or.chisq <- function(y, trt, digits=3, pValuesOnly=TRUE, verbose=TRUE) {
   return(list("p.value"=kruskres, "sign"=kruskres_add, "formatted"=comb))
 }
 
-kruskal.multiple <- function(data, grouping, sig.level=0.05, p.adj="holm", group=TRUE,...){   #, filtered=FALSE
-  require.package("agricolae")
+#' Conducts zaUtils::kruskal.groups agricolae::kruskal for multiple columns in a data.frame.
+#' @export
+#' @author Daniel Hoop
+#' @param data The data.frame containing the data to test.
+#' @param grouping A grouping vector.
+#' @param group Logical value indicating if a grouping with letters should be conducted (`zaUtils::kruskal.groups`) or not (`agricolae::kruskal`).
+#' @inheritParams kruskal.groups
+kruskal.multiple <- function(data, grouping, sig.level=0.05, p.adj="holm", group=TRUE, ...){   #, filtered=FALSE
+  .install.package("agricolae")
+  if (is.null(dim(data)))
+    data <- data.frame(var = data)
   result <- vector("list",ncol(data))
   if(!group){
     for (i in 1:ncol(data)) {
-      cat(paste("\n\n################"))
-      #result[[i]] <-
-      kruskal(data[,i], grouping, main=colnames(data)[i], p.adj=p.adj, group=group)
+      result[[i]] <- agricolae::kruskal(data[,i], grouping, main=colnames(data)[i], p.adj=p.adj, group=group)
     }
   } else {
     result <- list()
-    for(i in 1:ncol(data)) { result[[i]] <- kruskal.groups(data[,i],grouping,print=FALSE,...)$summary; err.count <- a}
+    for(i in 1:ncol(data)) {
+      result[[i]] <- kruskal.groups(data[,i], grouping, ...)$summary
+    }
     names(result) <- colnames(data)
   }
   return(result)
 }
 # kruskal.multiple(results,clustering.rep[1:2000])
-####
+
+#' Conducts pgirmess::kruskalmc for multiple columns in a data.frame.
+#' @export
+#' @author Daniel Hoop
+#' @param data The data.frame containing the data to test.
+#' @param grouping A grouping vector.
+#' kruskalmc.multiple(
+#'   data.frame(a = 1:10, b = runif(10)),
+#'   c(rep(1, 5), rep(2, 5)))
 kruskalmc.multiple <- function(data, grouping, sig.level=0.05){
-  require.package("pgirmess")
-  result <- vector("list",ncol(data))
+  .install.package("pgirmess")
+  if (is.null(dim(data)))
+    data <- data.frame(var = data)
+  result <- vector("list", ncol(data))
   for (i in 1:ncol(data))
-    result[[i]] <- kruskalmc(data[,i], grouping)
+    result[[i]] <- pgirmess::kruskalmc(data[,i], grouping)
   if(!is.null(colnames(data)))
     names(result) <- colnames(data)
   return(result)
 }
 #test1 <- kruskalmc.all(gruppiert[,1:2], gruppiert[,"grouping"])
-####
-kruskal.test.multiple <- function(data,grouping,extract.p=TRUE,round.p=3){
-  result <- vector("list",ncol(data))
+
+#' Conducts stats::kruskal.test for multiple columns in a data.frame.
+#' @export
+#' @author Daniel Hoop
+#' @param data The data.frame containing the data to test.
+#' @param grouping A grouping vector.
+#' @param extract.p Logical value if only the p value should be extracted from the result of `stats::kruskal.test`.
+#' @param digits The number of digits to round the p values.
+#' @examples
+#' kruskal.test.multiple(
+#'   data.frame(a = 1:10, b = runif(10)),
+#'   c(rep(1, 5), rep(2, 5)))
+kruskal.test.multiple <- function(data, grouping, extract.p=TRUE, digits=3){
+  if (is.null(dim(data)))
+    data <- data.frame(var = data)
+  result <- vector("list", ncol(data))
   for(i in 1:ncol(data))
-    result[[i]] <- kruskal.test(data[,i], grouping)
-  if(!is.null(colnames(data))) names(result) <- colnames(data)
+    result[[i]] <- stats::kruskal.test(data[,i], grouping)
+  if(!is.null(colnames(data)))
+    names(result) <- colnames(data)
   if(extract.p) {
     p.value <- numeric()
     for(i in 1:length(result)){
       p.value[i] <- result[[i]]$p.value
     }
-    p.value <- round(p.value,round.p)
+    p.value <- round(p.value, digits)
     names(p.value) <- names(result)
     result <- p.value
   }
   return(result)
 }
-#k <- kruskal.test.multiple(data[,1:10],clustering.rep[1:2000])
-#k1 <- kruskal.multiple(data[,1:10],clustering.rep[1:2000],print=FALSE)
 
-# Example for kruskal.groups
-if (FALSE){
-  n <- 1000
-  trt <- c(rep(1, n),
-           rep(2, n),
-           rep(3, n))
-  y <-  c(rnorm(n, 0, 0.1),
-          rnorm(n, 1, 0.1),
-          rnorm(n, 0,  0.15))
-  #kruskal.groups(y=y, trt=trt)
-}
-
-kruskal.groups <- function(y,trt,sig.level=0.05,p.adj="holm",median.mean=c("mean","median","both"),digits=2,ranked=c("no","character.left","character.right","rankmean","intern"),print.result=FALSE) {
-  if(length(unique(trt))>9) stop("Due to the output structure of the underlying function kruskal{agricolae} this function only works up to 9 groups!")
-  if(any(is.na(trt))) stop("NA values in trt are now allowed")
+#' Assign groups to character labels. Groups that do not have the same character, are significantly different.
+#' @export
+#' @author Daniel Hoop
+#' @param y The variable of interest.
+#' @param trt The treatment vector.
+#' @param sig.level The significance level which is relevant for the grouping with letters.
+#' @param p.adj The probability adjustment method.
+#' @param median.mean UNKNOWN
+#' @param digits The number of digits in the result.
+#' @param ranked UNKNOWN
+#' @return A list with different attributes, the most important of which has the name "summary".
+#' @examples
+#' n <- 1000
+#' y <-   c(rnorm(n, 0, 0.1), rnorm(n, 1, 0.1), rnorm(n, 0,  0.15))
+#' trt <- c(rep(1, n),        rep(2, n),        rep(3, n))
+#' kruskal.groups(y = y, trt = trt)
+kruskal.groups <- function(y, trt, sig.level=0.05, p.adj="holm", median.mean=c("mean","median","both"), digits=2, ranked=c("no","character.left","character.right","rankmean","intern")) {
+  if(length(unique(trt))>9)
+    stop("Due to the output structure of the underlying function agricolae::kruskal this function only works up to 9 groups.")
+  if(any(is.na(trt)))
+    stop("NA values in `trt` are now allowed")
 
   if(is.matrix(y)) { y <- as.data.frame(y) #return( apply(y,2,function(x)kruskal.groups(y=x, trt=trt, sig.level=sig.level, p.adj=p.adj, median.mean=median.mean, digits=digits, ranked=ranked, print.result=print.result)) )
-  } else if (is.data.frame(y)) return (return( lapply(y,function(x)kruskal.groups(y=x, trt=trt, sig.level=sig.level, p.adj=p.adj, median.mean=median.mean, digits=digits, ranked=ranked, print.result=print.result)) ))
+  } else if (is.data.frame(y)) return (return( lapply(y,function(x)kruskal.groups(y=x, trt=trt, sig.level=sig.level, p.adj=p.adj, median.mean=median.mean, digits=digits, ranked=ranked)) ))
 
   char <- c("a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p")
   ranked <- match.arg(ranked)
@@ -11441,7 +11884,6 @@ kruskal.groups <- function(y,trt,sig.level=0.05,p.adj="holm",median.mean=c("mean
     }
     result <- list(summary=out, groups=mat.short, groups.long=mat, kruskal=krsk, sizes=sizes, ranking.rankmean=ranking.rankmean, ranking.character.left=ranking.character.left, ranking.character.right=ranking.character.right, ranking.intern=ranking.intern)
     class(result) <- "kruskal.groups"
-    if(print.result) print(result)
     return(result)
   }
 
@@ -11529,15 +11971,12 @@ kruskal.groups <- function(y,trt,sig.level=0.05,p.adj="holm",median.mean=c("mean
     mat.short <- mat.short[rank.mat[,ranked],,drop=FALSE]
     krsk[[2]] <- krsk[[2]][rank.mat[,ranked],]
   }
-  result <- list(summary=out,groups=mat.short,groups.long=mat,kruskal=krsk, sizes=sizes, ranking.rankmean=ranking.rankmean, ranking.character.left=ranking.character.left, ranking.character.right=ranking.character.right, ranking.intern=ranking.intern)
+  result <- list(summary=out, groups=mat.short, groups.long=mat, kruskal=krsk, sizes=sizes, ranking.rankmean=ranking.rankmean, ranking.character.left=ranking.character.left, ranking.character.right=ranking.character.right, ranking.intern=ranking.intern)
   class(result) <- "kruskal.groups"
-  if(print.result) print(result)
   return(result)
 }
 print.kruskal.groups <- function(x,...){
-  a <- vector("list")
-  a$summary <- x$summary
-  print(a,...)
+  print(x$summary, ...)
 }
 ####
 
@@ -11801,9 +12240,7 @@ sig.groups <- function(y, trt, sig, sig.level=0.05, digits=2, median.mean=c("mea
   invisible(result)
 }
 print.sig.groups <- function(x,...){
-  a <- vector("list")
-  a$summary <- x$summary
-  print(a,...)
+  print(x$summary, ...)
 }
 
 

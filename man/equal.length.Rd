@@ -15,7 +15,7 @@ equal.length(
 \arguments{
 \item{add}{The sign that will be added.}
 
-\item{where}{Character indigating if `add` should be added at the beginning or at the end of the string.}
+\item{where}{Character indicating if `add` should be added at the beginning or at the end of the string.}
 }
 \description{
 Make all entires in vector the same length.
